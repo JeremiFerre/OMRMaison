@@ -193,6 +193,12 @@ namespace OMRMaison
                 }
             }
 
+            if (indexLigneMilieu == 0)
+            {
+                Console.WriteLine("Cette zone ne contient pas de rond");
+                return null;
+            }
+
             //Verification existance cercle vers le haut du diamètre
             for (int y = indexLigneMilieu; y >= 0; y--)
             {

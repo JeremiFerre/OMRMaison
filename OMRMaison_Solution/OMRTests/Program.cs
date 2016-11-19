@@ -5,6 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OMRMaison;
+using Ghostscript.NET.Rasterizer;
+using Ghostscript.NET;
+using GhostscriptSharp.Settings;
+using System.IO;
+using System.Reflection;
 
 /// This file is part of Yermangderrff - OMRMaison.
 
@@ -25,6 +30,46 @@ namespace OMRTests
 {
     public class Program
     {
+        public static List<System.Drawing.Image> exportPdfToImages(string file, int dpi)
+        {
+            string path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            List<System.Drawing.Image> output = new List<System.Drawing.Image>();
+            System.Drawing.Image img;
+
+            GhostscriptRasterizer rasterizer = null;
+            GhostscriptVersionInfo vesion = new GhostscriptVersionInfo(new Version(0, 0, 0), path + @"\gsdll32.dll", string.Empty, Ghostscript.NET.GhostscriptLicense.GPL);
+
+            using (rasterizer = new GhostscriptRasterizer())
+            {
+                rasterizer.Open(file, vesion, false);
+
+                for (int i = 1; i <= rasterizer.PageCount; i++)
+                {
+                    //string pageFilePath = Path.Combine(outputPath, Path.GetFileNameWithoutExtension(file) + "-p" + i.ToString() + ".bmp");
+
+                    img = rasterizer.GetPage(dpi, dpi, i);
+
+                    output.Add(img);
+                }
+
+                rasterizer.Close();
+            }
+
+            return output;
+        }
+
+        public static List<PixelsCircle> ReadingMarksCoord(System.Drawing.Image image)
+        {
+            List<PixelsCircle> marks = new List<PixelsCircle>();
+            Rectangle coinHautGauche = new Rectangle(0, 0, 100, 100);
+            Bitmap b = new Bitmap(image);
+            marks.Add(Detection.getPixelsNoirsRond(b, coinHautGauche, 10, true));
+
+            Console.WriteLine(marks[0].ToString());
+
+            return null;
+        }
+
         public static void Main(string[] args)
         {
             try
@@ -40,21 +85,26 @@ namespace OMRTests
                 PixelsCircle pc3;
                 PixelsCircle pc4;
 
-                Console.WriteLine("Zone haut-gauche: ");
-                if ((pc1 = Detection.getPixelsNoirsRond(b, r1, 10, false)) != null)
-                    Console.WriteLine(pc1.x + ", " + pc1.y + ", " + pc1.diametre);
+                //Console.WriteLine("Zone haut-gauche: ");
+                //if ((pc1 = Detection.getPixelsNoirsRond(b, r1, 10, false)) != null)
+                //    Console.WriteLine(pc1.ToString());
 
-                Console.WriteLine("Zone haut-droite: ");
-                if ((pc2 = Detection.getPixelsNoirsRond(b, r2, 10, false)) != null)
-                    Console.WriteLine(pc2.x + ", " + pc2.y + ", " + pc2.diametre);
+                //Console.WriteLine("Zone haut-droite: ");
+                //if ((pc2 = Detection.getPixelsNoirsRond(b, r2, 10, false)) != null)
+                //    Console.WriteLine(pc2.ToString());
 
-                Console.WriteLine("Zone bas-gauche: ");
-                if ((pc3 = Detection.getPixelsNoirsRond(b, r3, 10, false)) != null)
-                    Console.WriteLine(pc3.x + ", " + pc3.y + ", " + pc3.diametre);
+                //Console.WriteLine("Zone bas-gauche: ");
+                //if ((pc3 = Detection.getPixelsNoirsRond(b, r3, 10, false)) != null)
+                //    Console.WriteLine(pc3.ToString());
 
-                Console.WriteLine("Zone bas-droite: ");
-                if ((pc4 = Detection.getPixelsNoirsRond(b, r4, 10, true)) != null)
-                    Console.WriteLine(pc4.x + ", " + pc4.y + ", " + pc4.diametre);
+                //Console.WriteLine("Zone bas-droite: ");
+                //if ((pc4 = Detection.getPixelsNoirsRond(b, r4, 10, true)) != null)
+                //    Console.WriteLine(pc4.ToString());
+
+                List<System.Drawing.Image> imagesPdf = Program.exportPdfToImages("HelloWorld.pdf", 50);
+                Console.WriteLine(imagesPdf.Count.ToString());
+
+                Program.ReadingMarksCoord(imagesPdf[0]);
 
                 Console.ReadKey();
             }

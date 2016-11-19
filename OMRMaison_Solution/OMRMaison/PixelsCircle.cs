@@ -33,5 +33,10 @@ namespace OMRMaison
             this.y = y;
             this.diametre = diam;
         }
+
+        public override string ToString()
+        {
+            return "X: " + x + ", Y: " + y + ", Diametre: " + diametre;
+        }
     }
 }
