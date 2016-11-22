@@ -3,6 +3,11 @@ C# Library for Black pixels Recognition in Bitmap images
 
 ---Download the OMRMaison.dll file to use the library in your project---
 
+Fonctionnement
+
+La detection d'un rond dans une zone d'une image (Circle detection in image: getNbPixelsNoirsRond)
+La detection d'un pourcentage de pixels noirs dans un rectangle (Zone pixels detection: getNbPixelsNoirs)
+
 
 # LICENSE
 This file is part of Yermangderrff - OMRMaison.
@@ -12,6 +17,7 @@ OMRMaison is free software: you can redistribute it and/or modify it under the t
 OMRMaison is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with OMRMaison. If not, see <http://www.gnu.org/licenses/>.
+
 
 # Contact
 You can contact me via mail: yermangderrff36@gmail.com

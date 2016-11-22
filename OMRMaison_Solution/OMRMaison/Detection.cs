@@ -24,8 +24,25 @@ namespace OMRMaison
 {
     public class Detection
     {
+        private static List<Color> getZonePixels(Bitmap bmp, Rectangle Zone)
+        {
+            //Traitement
+            List<Color> couleurs = new List<Color>();
+            int x, y;
+
+            for (y = Zone.Y; y < Zone.Height + Zone.Y; y++)
+            {
+                for (x = Zone.X; x < Zone.Width + Zone.X; x++)
+                {
+                    couleurs.Add(bmp.GetPixel(x, y));
+                }
+            }
+
+            return couleurs;
+        }
+
         //Retourne une liste des valeurs RGB de chaque pixel de la zone de l'image demandée
-        private static Dictionary<int, List<byte>> getZonePixels(Bitmap bmp, Rectangle Zone, bool DisposeAfter)
+        private static Dictionary<int, List<byte>> getZonePixelsUnsafe(Bitmap bmp, Rectangle Zone, bool DisposeAfter)
         {
             // Create a new bitmap picture to work on it
             System.Drawing.Imaging.BitmapData bmpData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
@@ -79,29 +96,17 @@ namespace OMRMaison
         }
 
         //Retourne un pourcentage de pixels proches du noirs dans une zone selon un seuil donnant le pourcentage de couleur moins noire possible 
-        public static float getNbPixelsNoirs(Bitmap src, Rectangle zone, int erreur, bool DisposeAfter)
+        public static float getNbPixelsNoirs(Bitmap src, Rectangle zone, int erreur)
         {
-            Dictionary<int, List<byte>> listePixels = Detection.getZonePixels(src, zone, DisposeAfter);
-            int couleurValide = 0;
+            List<Color> listePixels = Detection.getZonePixels(src, zone);
             int nbPixels = 0;
 
-            for (int i = 1; i <= listePixels.Count; i++)
+            foreach (Color c in listePixels)
             {
-                couleurValide = 0;
-                foreach (byte b in listePixels[i])
-                {
-                    Console.WriteLine("Pixel: " + b.ToString());
-                    if (b <= erreur)
-                    {
-                        couleurValide++;
-                    }
-                }
-                Console.WriteLine("CouleurValide: " + couleurValide);
-                if (couleurValide == 3)
+                if (c.R < erreur && c.G < erreur && c.B < erreur)
                 {
                     nbPixels++;
                 }
-                Console.WriteLine("\nNombre de pixels: " + nbPixels);
             }
 
             int totalPixels = zone.Height * zone.Width;
@@ -111,22 +116,13 @@ namespace OMRMaison
             return result;
         }
 
-        private static int getNbPixelsNoirs(List<List<byte>> listePixels, int erreur)
+        private static int getNbPixelsNoirs(List<Color> listePixels, int erreur)
         {
-            int couleurValide = 0;
             int nbPixels = 0;
 
-            foreach (List<byte> lb in listePixels)
+            foreach (Color c in listePixels)
             {
-                couleurValide = 0;
-                foreach (byte b in lb)
-                {   
-                    if (b <= erreur)
-                    {
-                        couleurValide++;
-                    }
-                }
-                if (couleurValide == 3)
+                if (c.R < erreur && c.G < erreur && c.B < erreur)
                 {
                     nbPixels++;
                 }
@@ -134,22 +130,13 @@ namespace OMRMaison
             return nbPixels;
         }
 
-        private static int positionPremierPixelNoir(List<List<byte>> lignePixels, int erreur)
+        private static int positionPremierPixelNoir(List<Color> lignePixels, int erreur)
         {
-            int couleurValide = 0;
             int posPixels = 0;
 
-            foreach (List<byte> lb in lignePixels)
+            foreach (Color c in lignePixels)
             {
-                couleurValide = 0;
-                foreach (byte b in lb)
-                {
-                    if (b <= erreur)
-                    {
-                        couleurValide++;
-                    }
-                }
-                if (couleurValide == 3)
+                if (c.R < erreur && c.G < erreur && c.B < erreur)
                 {
                     return posPixels;
                 }
@@ -159,27 +146,27 @@ namespace OMRMaison
             return -1;
         }
 
-        public static PixelsCircle getPixelsNoirsRond(Bitmap src, Rectangle zone, int erreur, bool DisposeAfter)
+        public static PixelsCircle getPixelsNoirsRond(Bitmap src, Rectangle zone, int erreur)
         {
-            Dictionary<int, List<byte>> listePixels = Detection.getZonePixels(src, zone, DisposeAfter);
+            List<Color> listePixels = Detection.getZonePixels(src, zone);  
 
             int maxPixelsNoirsLigne = 0;
             int indexLigne1 = 0, indexLigneN = 0, indexLigneMilieu = 0;
 
             //Transfert de chaque ligne de pixels dans des listes
-            List<List<List<byte>>> lignePixels = new List<List<List<byte>>>();
-            int compteurListe = 0, c = 1;
-            lignePixels.Add(new List<List<byte>>());
+            List<List<Color>> lignePixels = new List<List<Color>>();
+            int compteurListe = 0, c = 0;
+            lignePixels.Add(new List<Color>());
 
-            for (int i = 1; i <= listePixels.Count; ++i)
+            foreach (Color col in listePixels)
             {
-                lignePixels[compteurListe].Add(listePixels[i]);
+                lignePixels[compteurListe].Add(col);
                 c++;
-                if (c == (zone.Width + 1) && i != listePixels.Count)
+                if (c == zone.Width)
                 {
-                    c = 1;
+                    c = 0;
                     compteurListe++;
-                    lignePixels.Add(new List<List<byte>>());
+                    lignePixels.Add(new List<Color>());
                 }
             }
 
@@ -195,17 +182,23 @@ namespace OMRMaison
 
             if (indexLigneMilieu == 0)
             {
-                Console.WriteLine("Cette zone ne contient pas de rond");
+                Console.WriteLine("Cette zone ne contient pas de rond1");
                 return null;
             }
 
             //Verification existance cercle vers le haut du diamètre
             for (int y = indexLigneMilieu; y >= 0; y--)
             {
+                if ((y - 1) == 0)
+                {
+                    Console.WriteLine("Cette zone ne contient pas de rond2");
+                    return null;
+                }
+
                 if ((positionPremierPixelNoir(lignePixels[y - 1], erreur) - positionPremierPixelNoir(lignePixels[y], erreur) > 5)
                     || (getNbPixelsNoirs(lignePixels[y], erreur) < getNbPixelsNoirs(lignePixels[y - 1], erreur)))
                 {
-                    Console.WriteLine("Cette zone ne contient pas de rond");
+                    Console.WriteLine("Cette zone ne contient pas de rond3");
                     return null;
                 }
                 if (getNbPixelsNoirs(lignePixels[y], erreur) == 0)
@@ -218,10 +211,16 @@ namespace OMRMaison
             //Verification existance cercle vers le bas du diamètre
             for (int y = indexLigneMilieu; y < lignePixels.Count; y++)
             {
+                if ((y + 1) == lignePixels.Count)
+                {
+                    Console.WriteLine("Cette zone ne contient pas de rond4");
+                    return null;
+                }
+
                 if ((positionPremierPixelNoir(lignePixels[y + 1], erreur) - positionPremierPixelNoir(lignePixels[y], erreur) > 5)
                     || (getNbPixelsNoirs(lignePixels[y], erreur) < getNbPixelsNoirs(lignePixels[y + 1], erreur)))
                 {
-                    Console.WriteLine("Cette zone ne contient pas de rond");
+                    Console.WriteLine("Cette zone ne contient pas de rond5");
                     return null;
                 }
                 if (getNbPixelsNoirs(lignePixels[y], erreur) == 0)
@@ -236,7 +235,7 @@ namespace OMRMaison
                 || getNbPixelsNoirs(lignePixels[indexLigneN], erreur) >= getNbPixelsNoirs(lignePixels[indexLigneMilieu], erreur)
                 || Math.Abs(getNbPixelsNoirs(lignePixels[indexLigne1], erreur) - getNbPixelsNoirs(lignePixels[indexLigneN], erreur)) > 5)
             {
-                Console.WriteLine("Cette zone ne contient pas de rond");
+                Console.WriteLine("Cette zone ne contient pas de rond6");
                 return null;
             }
             else
@@ -244,7 +243,7 @@ namespace OMRMaison
                 indexLigneMilieu = (indexLigne1 + indexLigneN) / 2;
 
                 return new PixelsCircle(zone.X + positionPremierPixelNoir(lignePixels[indexLigneMilieu], erreur) + (maxPixelsNoirsLigne / 2),
-                    zone.Y + indexLigneMilieu, maxPixelsNoirsLigne);
+                    zone.Y + indexLigneMilieu + 1, maxPixelsNoirsLigne);
             }
         }
 

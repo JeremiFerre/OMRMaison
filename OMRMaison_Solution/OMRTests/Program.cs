@@ -30,60 +30,29 @@ namespace OMRTests
 {
     public class Program
     {
-        public static List<System.Drawing.Image> exportPdfToImages(string file, int dpi)
-        {
-            string path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            List<System.Drawing.Image> output = new List<System.Drawing.Image>();
-            System.Drawing.Image img;
 
-            GhostscriptRasterizer rasterizer = null;
-            GhostscriptVersionInfo vesion = new GhostscriptVersionInfo(new Version(0, 0, 0), path + @"\gsdll32.dll", string.Empty, Ghostscript.NET.GhostscriptLicense.GPL);
-
-            using (rasterizer = new GhostscriptRasterizer())
-            {
-                rasterizer.Open(file, vesion, false);
-
-                for (int i = 1; i <= rasterizer.PageCount; i++)
-                {
-                    //string pageFilePath = Path.Combine(outputPath, Path.GetFileNameWithoutExtension(file) + "-p" + i.ToString() + ".bmp");
-
-                    img = rasterizer.GetPage(dpi, dpi, i);
-
-                    output.Add(img);
-                }
-
-                rasterizer.Close();
-            }
-
-            return output;
-        }
-
-        public static List<PixelsCircle> ReadingMarksCoord(System.Drawing.Image image)
-        {
-            List<PixelsCircle> marks = new List<PixelsCircle>();
-            Rectangle coinHautGauche = new Rectangle(0, 0, 100, 100);
-            Bitmap b = new Bitmap(image);
-            marks.Add(Detection.getPixelsNoirsRond(b, coinHautGauche, 10, true));
-
-            Console.WriteLine(marks[0].ToString());
-
-            return null;
-        }
 
         public static void Main(string[] args)
         {
-            try
+            /*try
             {
+                List<Image> imagesPdf = Program.exportPdfToImages("HelloWorld.pdf", 72);
                 Bitmap b = new Bitmap("testRond.PNG");
-                Rectangle r1 = new Rectangle(23, 5, 40, 40);
-                Rectangle r2 = new Rectangle(514, 15, 44, 44);
-                Rectangle r3 = new Rectangle(20, 355, 43, 48);
-                Rectangle r4 = new Rectangle(513, 360, 43, 44);
 
-                PixelsCircle pc1;
-                PixelsCircle pc2;
-                PixelsCircle pc3;
-                PixelsCircle pc4;
+                //Rectangle r1 = new Rectangle(23, 5, 40, 40);
+                //Rectangle r2 = new Rectangle(514, 15, 44, 44);
+                //Rectangle r3 = new Rectangle(20, 355, 43, 48);
+                //Rectangle r4 = new Rectangle(513, 360, 43, 44);
+
+                Program.ReadingMarksCoord(imagesPdf[0], 0, 0, 100, 100);
+                Program.ReadingMarksCoord(imagesPdf[0], 1529, 0, 100, 100);
+                Program.ReadingMarksCoord(imagesPdf[0], 0, 2200, 200, 139);
+                Program.ReadingMarksCoord(imagesPdf[0], 1529, 2000, 100, 100);
+
+                //PixelsCircle pc1;
+                //PixelsCircle pc2;
+                //PixelsCircle pc3;
+                //PixelsCircle pc4;
 
                 //Console.WriteLine("Zone haut-gauche: ");
                 //if ((pc1 = Detection.getPixelsNoirsRond(b, r1, 10, false)) != null)
@@ -101,10 +70,10 @@ namespace OMRTests
                 //if ((pc4 = Detection.getPixelsNoirsRond(b, r4, 10, true)) != null)
                 //    Console.WriteLine(pc4.ToString());
 
-                List<System.Drawing.Image> imagesPdf = Program.exportPdfToImages("HelloWorld.pdf", 50);
-                Console.WriteLine(imagesPdf.Count.ToString());
+                
+                //Console.WriteLine(imagesPdf.Count.ToString());
 
-                Program.ReadingMarksCoord(imagesPdf[0]);
+                //Program.ReadingMarksCoord(imagesPdf[0]);
 
                 Console.ReadKey();
             }
@@ -117,7 +86,7 @@ namespace OMRTests
             {
                 Console.WriteLine(e.ToString());
                 Console.ReadKey();
-            }
+            }*/
         }
     }
 }
