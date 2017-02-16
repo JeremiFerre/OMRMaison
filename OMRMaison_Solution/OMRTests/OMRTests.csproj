@@ -75,6 +75,9 @@
     <Content Include="Point.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="rondParfaitDecale.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="testCaseCochée.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
